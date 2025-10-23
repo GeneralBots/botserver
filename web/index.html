@@ -689,7 +689,9 @@
                 height: 100%;
                 background: #90ee90;
                 border-radius: 3px;
-                transition: width 0.3s ease, background-color 0.3s ease;
+                transition:
+                    width 0.3s ease,
+                    background-color 0.3s ease;
             }
 
             .context-progress-bar.warning {
@@ -880,15 +882,27 @@
         </div>
 
         <!-- New elements for improvements -->
-        <button class="scroll-to-bottom" id="scrollToBottom" style="display: none">
+        <button
+            class="scroll-to-bottom"
+            id="scrollToBottom"
+            style="display: none"
+        >
             ↓
         </button>
 
-        <div class="context-indicator" id="contextIndicator" style="display: none">
+        <div
+            class="context-indicator"
+            id="contextIndicator"
+            style="display: none"
+        >
             <div>Contexto</div>
             <div id="contextPercentage">0%</div>
             <div class="context-progress">
-                <div class="context-progress-bar" id="contextProgressBar" style="width: 0%"></div>
+                <div
+                    class="context-progress-bar"
+                    id="contextProgressBar"
+                    style="width: 0%"
+                ></div>
             </div>
         </div>
 
@@ -910,7 +924,9 @@
             let reconnectTimeout = null;
             let thinkingTimeout = null;
             let lastMessageLength = 0;
-            let contextUsage = 0;
+            let totalTokens = 0;
+            const MAX_TOKENS = 5000;
+            const MIN_DISPLAY_PERCENTAGE = 20;
             let isUserScrolling = false;
             let autoScrollEnabled = true;
 
@@ -918,16 +934,25 @@
             const input = document.getElementById("messageInput");
             const sendBtn = document.getElementById("sendBtn");
             const newChatBtn = document.getElementById("newChatBtn");
-            const connectionStatus = document.getElementById("connectionStatus");
+            const connectionStatus =
+                document.getElementById("connectionStatus");
             const scrollToBottomBtn = document.getElementById("scrollToBottom");
-            const contextIndicator = document.getElementById("contextIndicator");
-            const contextPercentage = document.getElementById("contextPercentage");
-            const contextProgressBar = document.getElementById("contextProgressBar");
+            const contextIndicator =
+                document.getElementById("contextIndicator");
+            const contextPercentage =
+                document.getElementById("contextPercentage");
+            const contextProgressBar =
+                document.getElementById("contextProgressBar");
 
             marked.setOptions({
                 breaks: true,
                 gfm: true,
             });
+
+            // Token estimation function (roughly 4 characters per token)
+            function estimateTokens(text) {
+                return Math.ceil(text.length / 4);
+            }
 
             function toggleSidebar() {
                 document.getElementById("sidebar").classList.toggle("open");
@@ -940,7 +965,10 @@
             function getWebSocketUrl() {
                 const protocol =
                     window.location.protocol === "https:" ? "wss:" : "ws:";
-                return `${protocol}//${window.location.host}/ws?session_id=${currentSessionId}&user_id=${currentUserId}`;
+                // Generate UUIDs if not set yet
+                const sessionId = currentSessionId || crypto.randomUUID();
+                const userId = currentUserId || crypto.randomUUID();
+                return `${protocol}//${window.location.host}/ws?session_id=${sessionId}&user_id=${userId}`;
             }
 
             // Auto-focus on input when page loads
@@ -964,10 +992,12 @@
             });
 
             // Scroll management
-            messagesDiv.addEventListener("scroll", function() {
+            messagesDiv.addEventListener("scroll", function () {
                 // Check if user is scrolling manually
-                const isAtBottom = messagesDiv.scrollHeight - messagesDiv.scrollTop <= messagesDiv.clientHeight + 100;
-                
+                const isAtBottom =
+                    messagesDiv.scrollHeight - messagesDiv.scrollTop <=
+                    messagesDiv.clientHeight + 100;
+
                 if (!isAtBottom) {
                     isUserScrolling = true;
                     showScrollToBottomButton();
@@ -993,29 +1023,41 @@
 
             scrollToBottomBtn.addEventListener("click", scrollToBottom);
 
-            // Context usage management
-            function updateContextUsage(usage) {
-                contextUsage = usage;
-                const percentage = Math.min(100, Math.round(usage * 100));
-                
+            // Context usage management with token-based calculation
+            function updateContextUsage(tokens) {
+                totalTokens = tokens;
+                const percentage = Math.min(
+                    100,
+                    Math.round((tokens / MAX_TOKENS) * 100),
+                );
+
                 contextPercentage.textContent = `${percentage}%`;
                 contextProgressBar.style.width = `${percentage}%`;
-                
+
                 // Update color based on usage
                 if (percentage >= 90) {
-                    contextProgressBar.className = "context-progress-bar danger";
+                    contextProgressBar.className =
+                        "context-progress-bar danger";
                 } else if (percentage >= 70) {
-                    contextProgressBar.className = "context-progress-bar warning";
+                    contextProgressBar.className =
+                        "context-progress-bar warning";
                 } else {
                     contextProgressBar.className = "context-progress-bar";
                 }
-                
-                // Show indicator if usage is above 50%
-                if (percentage >= 50) {
+
+                // Show indicator if usage is above minimum display percentage
+                if (percentage >= MIN_DISPLAY_PERCENTAGE) {
                     contextIndicator.style.display = "block";
                 } else {
                     contextIndicator.style.display = "none";
                 }
+            }
+
+            // Add tokens to the total count
+            function addToTokenCount(text) {
+                const tokens = estimateTokens(text);
+                totalTokens += tokens;
+                updateContextUsage(totalTokens);
             }
 
             async function initializeAuth() {
@@ -1072,13 +1114,14 @@
                     connectWebSocket();
                     loadSessions();
                     document.getElementById("messages").innerHTML = `
-                        <div id="emptyState">
-                            <div class="empty-icon">D</div>
-                            <h2 class="empty-title neon-text">Bem-vindo ao General Bots</h2>
-                            <p class="empty-subtitle">Seu assistente de IA avançado</p>
-                        </div>
-                    `;
-                    // Reset context usage for new session
+                                    <div id="emptyState">
+                                        <div class="empty-icon">D</div>
+                                        <h2 class="empty-title neon-text">Bem-vindo ao General Bots</h2>
+                                        <p class="empty-subtitle">Seu assistente de IA avançado</p>
+                                    </div>
+                                `;
+                    // Reset token count for new session
+                    totalTokens = 0;
                     updateContextUsage(0);
                     if (isVoiceMode) {
                         await startVoiceSession();
@@ -1121,20 +1164,22 @@
                     if (history.length === 0) {
                         // Show empty state if no history
                         messages.innerHTML = `
-                            <div id="emptyState">
-                                <div class="empty-icon">D</div>
-                                <h2 class="empty-title neon-text">Bem-vindo ao General Bots</h2>
-                                <p class="empty-subtitle">Seu assistente de IA avançado</p>
-                            </div>
-                        `;
+                                        <div id="emptyState">
+                                            <div class="empty-icon">D</div>
+                                            <h2 class="empty-title neon-text">Bem-vindo ao General Bots</h2>
+                                            <p class="empty-subtitle">Seu assistente de IA avançado</p>
+                                        </div>
+                                    `;
+                        totalTokens = 0;
                         updateContextUsage(0);
                     } else {
-                        // Display existing history
+                        // Calculate token count from history
+                        totalTokens = 0;
                         history.forEach(([role, content]) => {
                             addMessage(role, content, false);
+                            totalTokens += estimateTokens(content);
                         });
-                        // Estimate context usage based on message count
-                        updateContextUsage(history.length / 2); // Assuming 20 messages is 100% context
+                        updateContextUsage(totalTokens);
                     }
                 } catch (error) {
                     console.error("Failed to load session history:", error);
@@ -1213,9 +1258,13 @@
                     emptyState.remove();
                 }
 
-                // Handle context usage if provided
+                // Handle context usage if provided by server
                 if (response.context_usage !== undefined) {
-                    updateContextUsage(response.context_usage);
+                    // Server provides usage as a ratio (0-1)
+                    const tokens = Math.round(
+                        response.context_usage * MAX_TOKENS,
+                    );
+                    updateContextUsage(tokens);
                 }
 
                 // Handle complete messages
@@ -1228,6 +1277,7 @@
                     } else {
                         // This is a complete message that wasn't being streamed
                         addMessage("assistant", response.content, false);
+                        addToTokenCount(response.content);
                     }
                 } else {
                     // Handle streaming messages
@@ -1261,7 +1311,9 @@
                         showWarning(eventData.message);
                         break;
                     case "context_usage":
-                        updateContextUsage(eventData.usage);
+                        // Server provides usage as a ratio (0-1)
+                        const tokens = Math.round(eventData.usage * MAX_TOKENS);
+                        updateContextUsage(tokens);
                         break;
                 }
             }
@@ -1275,18 +1327,18 @@
                 thinkingDiv.id = "thinking-indicator";
                 thinkingDiv.className = "message-container";
                 thinkingDiv.innerHTML = `
-                    <div class="assistant-message">
-                        <div class="assistant-avatar">D</div>
-                        <div class="thinking-indicator">
-                            <div class="typing-dots">
-                                <div class="typing-dot"></div>
-                                <div class="typing-dot"></div>
-                                <div class="typing-dot"></div>
-                            </div>
-                            <span>Pensando...</span>
-                        </div>
-                    </div>
-                `;
+                                <div class="assistant-message">
+                                    <div class="assistant-avatar">D</div>
+                                    <div class="thinking-indicator">
+                                        <div class="typing-dots">
+                                            <div class="typing-dot"></div>
+                                            <div class="typing-dot"></div>
+                                            <div class="typing-dot"></div>
+                                        </div>
+                                        <span>Pensando...</span>
+                                    </div>
+                                </div>
+                            `;
                 messagesDiv.appendChild(thinkingDiv);
 
                 gsap.to(thinkingDiv, {
@@ -1308,16 +1360,19 @@
                 thinkingTimeout = setTimeout(() => {
                     if (isThinking) {
                         hideThinkingIndicator();
-                        showWarning("O servidor pode estar ocupado. A resposta está demorando demais.");
+                        showWarning(
+                            "O servidor pode estar ocupado. A resposta está demorando demais.",
+                        );
                     }
                 }, 60000);
-                
+
                 isThinking = true;
             }
 
             function hideThinkingIndicator() {
                 if (!isThinking) return;
-                const thinkingDiv = document.getElementById("thinking-indicator");
+                const thinkingDiv =
+                    document.getElementById("thinking-indicator");
                 if (thinkingDiv) {
                     gsap.to(thinkingDiv, {
                         opacity: 0,
@@ -1371,14 +1426,14 @@
                 const continueDiv = document.createElement("div");
                 continueDiv.className = "message-container";
                 continueDiv.innerHTML = `
-                    <div class="assistant-message">
-                        <div class="assistant-avatar">D</div>
-                        <div class="assistant-message-content">
-                            <p>A conexão foi interrompida. Clique em "Continuar" para tentar recuperar a resposta.</p>
-                            <button class="continue-button" onclick="continueInterruptedResponse()">Continuar</button>
-                        </div>
-                    </div>
-                `;
+                                <div class="assistant-message">
+                                    <div class="assistant-avatar">D</div>
+                                    <div class="assistant-message-content">
+                                        <p>A conexão foi interrompida. Clique em "Continuar" para tentar recuperar a resposta.</p>
+                                        <button class="continue-button" onclick="continueInterruptedResponse()">Continuar</button>
+                                    </div>
+                                </div>
+                            `;
                 messagesDiv.appendChild(continueDiv);
 
                 gsap.to(continueDiv, {
@@ -1399,7 +1454,7 @@
                 if (!ws || ws.readyState !== WebSocket.OPEN) {
                     connectWebSocket();
                 }
-                
+
                 // Send a continue request to the server
                 if (ws && ws.readyState === WebSocket.OPEN) {
                     const continueData = {
@@ -1412,13 +1467,14 @@
                         media_url: null,
                         timestamp: new Date().toISOString(),
                     };
-                    
+
                     ws.send(JSON.stringify(continueData));
                 }
-                
+
                 // Remove the continue button
-                const continueButtons = document.querySelectorAll('.continue-button');
-                continueButtons.forEach(button => {
+                const continueButtons =
+                    document.querySelectorAll(".continue-button");
+                continueButtons.forEach((button) => {
                     button.parentElement.parentElement.parentElement.remove();
                 });
             }
@@ -1444,37 +1500,41 @@
 
                 if (role === "user") {
                     msg.innerHTML = `
-                        <div class="user-message">
-                            <div class="user-message-content">${escapeHtml(content)}</div>
-                        </div>
-                    `;
-                    // Update context usage when user sends a message
-                    updateContextUsage(contextUsage + 0.05); // Simulate 5% increase per message
+                                    <div class="user-message">
+                                        <div class="user-message-content">${escapeHtml(content)}</div>
+                                    </div>
+                                `;
+                    // Add tokens for user message
+                    if (!streaming) {
+                        addToTokenCount(content);
+                    }
                 } else if (role === "assistant") {
                     msg.innerHTML = `
-                        <div class="assistant-message">
-                            <div class="assistant-avatar">D</div>
-                            <div class="assistant-message-content markdown-content" id="${msgId || ""}">
-                                ${streaming ? "" : marked.parse(content)}
-                            </div>
-                        </div>
-                    `;
-                    // Update context usage when assistant responds
-                    updateContextUsage(contextUsage + 0.03); // Simulate 3% increase per response
+                                    <div class="assistant-message">
+                                        <div class="assistant-avatar">D</div>
+                                        <div class="assistant-message-content markdown-content" id="${msgId || ""}">
+                                            ${streaming ? "" : marked.parse(content)}
+                                        </div>
+                                    </div>
+                                `;
+                    // Add tokens for assistant message (only if not streaming)
+                    if (!streaming) {
+                        addToTokenCount(content);
+                    }
                 } else if (role === "voice") {
                     msg.innerHTML = `
-                        <div class="assistant-message">
-                            <div class="assistant-avatar">🎤</div>
-                            <div class="assistant-message-content">${content}</div>
-                        </div>
-                    `;
+                                    <div class="assistant-message">
+                                        <div class="assistant-avatar">🎤</div>
+                                        <div class="assistant-message-content">${content}</div>
+                                    </div>
+                                `;
                 } else {
                     msg.innerHTML = `
-                        <div class="assistant-message">
-                            <div class="assistant-avatar">D</div>
-                            <div class="assistant-message-content">${content}</div>
-                        </div>
-                    `;
+                                    <div class="assistant-message">
+                                        <div class="assistant-avatar">D</div>
+                                        <div class="assistant-message-content">${content}</div>
+                                    </div>
+                                `;
                 }
 
                 messagesDiv.appendChild(msg);
@@ -1498,7 +1558,7 @@
                 const msgElement = document.getElementById(streamingMessageId);
                 if (msgElement) {
                     msgElement.innerHTML = marked.parse(content);
-                    
+
                     // Auto-scroll to bottom if user isn't manually scrolling
                     if (!isUserScrolling) {
                         scrollToBottom();
@@ -1515,7 +1575,10 @@
                         currentStreamingContent,
                     );
                     msgElement.removeAttribute("id");
-                    
+
+                    // Add tokens for completed streaming message
+                    addToTokenCount(currentStreamingContent);
+
                     // Auto-scroll to bottom if user isn't manually scrolling
                     if (!isUserScrolling) {
                         scrollToBottom();
