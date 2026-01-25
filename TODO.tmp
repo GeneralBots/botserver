@@ -1,0 +1,663 @@
+    Checking bottest v6.1.0 (/home/rodriguez/src/gb/bottest)
+   Compiling botapp v6.1.0 (/home/rodriguez/src/gb/botapp)
+    Checking botserver v6.1.0 (/home/rodriguez/src/gb/botserver)
+warning: this function has too many arguments (8/7)
+   --> botserver/src/auto_task/app_logs.rs:117:5
+    |
+117 | /     pub fn log(
+118 | |         &self,
+119 | |         app_name: &str,
+120 | |         level: LogLevel,
+...   |
+125 | |         user_id: Option<Uuid>,
+126 | |     ) {
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_arguments
+    = note: `#[warn(clippy::too_many_arguments)]` on by default
+
+warning: this function has too many arguments (8/7)
+   --> botserver/src/auto_task/app_logs.rs:154:5
+    |
+154 | /     pub fn log_error(
+155 | |         &self,
+156 | |         app_name: &str,
+157 | |         source: LogSource,
+...   |
+162 | |         stack_trace: Option<&str>,
+163 | |     ) {
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_arguments
+
+warning: this function has too many arguments (8/7)
+   --> botserver/src/auto_task/task_manifest.rs:938:1
+    |
+938 | / pub fn create_manifest_from_llm_response(
+939 | |     app_name: &str,
+940 | |     description: &str,
+941 | |     tables: Vec<TableDefinition>,
+...   |
+946 | |     monitors: Vec<MonitorDefinition>,
+947 | | ) -> TaskManifest {
+    | |_________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_arguments
+
+warning: this function has too many arguments (11/7)
+   --> botserver/src/basic/keywords/human_approval.rs:256:5
+    |
+256 | /     pub fn create_request(
+257 | |         &self,
+258 | |         bot_id: Uuid,
+259 | |         session_id: Uuid,
+...   |
+267 | |         default_action: Option<ApprovalDecision>,
+268 | |     ) -> ApprovalRequest {
+    | |________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_arguments
+
+warning: this function has too many arguments (8/7)
+   --> botserver/src/basic/keywords/create_site.rs:111:1
+    |
+111 | / async fn create_site(
+112 | |     config: crate::core::config::AppConfig,
+113 | |     s3: Option<std::sync::Arc<aws_sdk_s3::Client>>,
+114 | |     bucket: String,
+...   |
+119 | |     prompt: Dynamic,
+120 | | ) -> Result<String, Box<dyn Error + Send + Sync>> {
+    | |_________________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_arguments
+
+warning: method `from_str` can be confused for the standard trait method `std::str::FromStr::from_str`
+  --> botserver/src/channels/media_upload.rs:44:5
+   |
+44 | /     pub fn from_str(s: &str) -> Option<Self> {
+45 | |         match s.to_lowercase().as_str() {
+46 | |             "twitter" | "x" => Some(Self::Twitter),
+47 | |             "facebook" | "fb" => Some(Self::Facebook),
+...  |
+61 | |     }
+   | |_____^
+   |
+   = help: consider implementing the trait `std::str::FromStr` or choosing a less ambiguous method name
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#should_implement_trait
+   = note: `#[warn(clippy::should_implement_trait)]` on by default
+
+warning: match expression looks like `matches!` macro
+  --> botserver/src/channels/oauth.rs:52:9
+   |
+52 | /         match self {
+53 | |             Self::Bluesky | Self::Telegram | Self::Twilio => false,
+54 | |             _ => true,
+55 | |         }
+   | |_________^ help: try: `!matches!(self, Self::Bluesky | Self::Telegram | Self::Twilio)`
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#match_like_matches_macro
+   = note: `#[warn(clippy::match_like_matches_macro)]` on by default
+
+warning: very complex type used. Consider factoring parts into `type` definitions
+   --> botserver/src/core/middleware.rs:501:6
+    |
+501 |   ) -> impl Fn(Request<Body>, Next) -> std::pin::Pin<Box<dyn std::future::Future<Output = Result<Response, Response>> + Send>>
+    |  ______^
+502 | |        + Clone
+503 | |        + Send {
+    | |_____________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#type_complexity
+    = note: `#[warn(clippy::type_complexity)]` on by default
+
+warning: stripping a prefix manually
+   --> botserver/src/core/middleware.rs:691:9
+    |
+691 |         &auth_header[7..]
+    |         ^^^^^^^^^^^^^^^^^
+    |
+note: the prefix was tested here
+   --> botserver/src/core/middleware.rs:690:17
+    |
+690 |     let token = if auth_header.starts_with("Bearer ") {
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#manual_strip
+    = note: `#[warn(clippy::manual_strip)]` on by default
+help: try using the `strip_prefix` method
+    |
+690 ~     let token = if let Some(<stripped>) = auth_header.strip_prefix("Bearer ") {
+691 ~         <stripped>
+    |
+
+warning: method `from_str` can be confused for the standard trait method `std::str::FromStr::from_str`
+  --> botserver/src/core/organization_invitations.rs:37:5
+   |
+37 | /     pub fn from_str(s: &str) -> Option<Self> {
+38 | |         match s.to_lowercase().as_str() {
+39 | |             "owner" => Some(Self::Owner),
+40 | |             "admin" => Some(Self::Admin),
+...  |
+47 | |     }
+   | |_____^
+   |
+   = help: consider implementing the trait `std::str::FromStr` or choosing a less ambiguous method name
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#should_implement_trait
+
+warning: this function has too many arguments (10/7)
+   --> botserver/src/core/organization_invitations.rs:184:5
+    |
+184 | /     pub async fn create_invitation(
+185 | |         &self,
+186 | |         organization_id: Uuid,
+187 | |         organization_name: &str,
+...   |
+194 | |         expires_in_days: i64,
+195 | |     ) -> Result<OrganizationInvitation, String> {
+    | |_______________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_arguments
+
+warning: this function has too many arguments (9/7)
+   --> botserver/src/core/organization_invitations.rs:249:5
+    |
+249 | /     pub async fn bulk_invite(
+250 | |         &self,
+251 | |         organization_id: Uuid,
+252 | |         organization_name: &str,
+...   |
+258 | |         message: Option<String>,
+259 | |     ) -> BulkInviteResponse {
+    | |___________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_arguments
+
+warning: clamp-like pattern without using clamp function
+   --> botserver/src/core/organization_invitations.rs:651:27
+    |
+651 |     let expires_in_days = req.expires_in_days.unwrap_or(7).max(1).min(30);
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: replace with clamp: `req.expires_in_days.unwrap_or(7).clamp(1, 30)`
+    |
+    = note: clamp will panic if max < min
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#manual_clamp
+    = note: `#[warn(clippy::manual_clamp)]` on by default
+
+warning: very complex type used. Consider factoring parts into `type` definitions
+   --> botserver/src/core/organization_rbac.rs:246:17
+    |
+246 |     user_roles: Arc<RwLock<HashMap<(Uuid, Uuid), Vec<Uuid>>>>,
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#type_complexity
+
+warning: this function has too many arguments (8/7)
+   --> botserver/src/core/package_manager/setup/directory_setup.rs:221:5
+    |
+221 | /     pub async fn create_user(
+222 | |         &mut self,
+223 | |         org_id: &str,
+224 | |         username: &str,
+...   |
+229 | |         is_admin: bool,
+230 | |     ) -> Result<DefaultUser> {
+    | |____________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_arguments
+
+warning: very complex type used. Consider factoring parts into `type` definitions
+   --> botserver/src/core/performance.rs:740:16
+    |
+740 |     processor: Arc<dyn Fn(Vec<T>) -> std::pin::Pin<Box<dyn std::future::Future<Output = ()> + Send>> + Send + Sync>,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#type_complexity
+
+warning: very complex type used. Consider factoring parts into `type` definitions
+   --> botserver/src/core/performance.rs:749:28
+    |
+749 |         let processor_arc: Arc<dyn Fn(Vec<T>) -> std::pin::Pin<Box<dyn std::future::Future<Output = ()> + Send>> + Send + Sync> =
+    |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#type_complexity
+
+warning: method `from_str` can be confused for the standard trait method `std::str::FromStr::from_str`
+  --> botserver/src/security/api_keys.rs:65:5
+   |
+65 | /     pub fn from_str(s: &str) -> Option<Self> {
+66 | |         match s {
+67 | |             "read" => Some(Self::Read),
+68 | |             "write" => Some(Self::Write),
+...  |
+85 | |     }
+   | |_____^
+   |
+   = help: consider implementing the trait `std::str::FromStr` or choosing a less ambiguous method name
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#should_implement_trait
+
+warning: method `from_str` can be confused for the standard trait method `std::str::FromStr::from_str`
+   --> botserver/src/security/auth.rs:150:5
+    |
+150 | /     pub fn from_str(s: &str) -> Self {
+151 | |         match s.to_lowercase().as_str() {
+152 | |             "anonymous" => Self::Anonymous,
+153 | |             "user" => Self::User,
+...   |
+164 | |     }
+    | |_____^
+    |
+    = help: consider implementing the trait `std::str::FromStr` or choosing a less ambiguous method name
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#should_implement_trait
+
+warning: very complex type used. Consider factoring parts into `type` definitions
+   --> botserver/src/security/passkey.rs:898:10
+    |
+898 |     ) -> Result<(Vec<u8>, Vec<u8>, Option<Vec<u8>>), PasskeyError> {
+    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#type_complexity
+
+warning: method `from_str` can be confused for the standard trait method `std::str::FromStr::from_str`
+  --> botserver/src/security/protection/manager.rs:36:5
+   |
+36 | /     pub fn from_str(s: &str) -> Option<Self> {
+37 | |         match s.to_lowercase().as_str() {
+38 | |             "lynis" => Some(Self::Lynis),
+39 | |             "rkhunter" => Some(Self::RKHunter),
+...  |
+46 | |     }
+   | |_____^
+   |
+   = help: consider implementing the trait `std::str::FromStr` or choosing a less ambiguous method name
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#should_implement_trait
+
+warning: method `from_str` can be confused for the standard trait method `std::str::FromStr::from_str`
+  --> botserver/src/security/secrets.rs:13:5
+   |
+13 | /     pub fn from_str(secret: &str) -> Self {
+14 | |         Self {
+15 | |             inner: secret.to_string(),
+16 | |         }
+17 | |     }
+   | |_____^
+   |
+   = help: consider implementing the trait `std::str::FromStr` or choosing a less ambiguous method name
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#should_implement_trait
+
+warning: method `from_str` can be confused for the standard trait method `std::str::FromStr::from_str`
+   --> botserver/src/botmodels/python_bridge.rs:124:5
+    |
+124 | /     pub fn from_str(s: &str) -> Option<Self> {
+125 | |         match s.to_lowercase().as_str() {
+126 | |             "mediapipe" => Some(Self::MediaPipe),
+127 | |             "deepface" => Some(Self::DeepFace),
+...   |
+134 | |     }
+    | |_____^
+    |
+    = help: consider implementing the trait `std::str::FromStr` or choosing a less ambiguous method name
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#should_implement_trait
+
+warning: `botserver` (bin "botserver") generated 23 warnings
+warning: variable does not need to be mutable
+   --> botserver/src/botmodels/opencv.rs:613:13
+    |
+613 |         let mut detector = OpenCvFaceDetector::new(config);
+    |             ----^^^^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: this `impl` can be derived
+   --> botserver/src/core/session/mod.rs:551:5
+    |
+551 | /     impl Default for Role {
+552 | |         fn default() -> Self {
+553 | |             Self::User
+554 | |         }
+555 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#derivable_impls
+    = note: `#[warn(clippy::derivable_impls)]` on by default
+help: replace the manual implementation with a derive attribute and mark the default variant
+    |
+544 ~     #[derive(Default)]
+545 ~     pub enum Role {
+546 |         Admin,
+547 |         Attendant,
+548 ~         #[default]
+549 ~         User,
+550 |         Guest,
+551 |     }
+552 |
+553 ~     
+    |
+
+warning: this `impl` can be derived
+   --> botserver/src/core/session/mod.rs:593:5
+    |
+593 | /     impl Default for Channel {
+594 | |         fn default() -> Self {
+595 | |             Self::WhatsApp
+596 | |         }
+597 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#derivable_impls
+help: replace the manual implementation with a derive attribute and mark the default variant
+    |
+584 ~     #[derive(Default)]
+585 ~     pub enum Channel {
+586 ~         #[default]
+587 ~         WhatsApp,
+588 |         Teams,
+...
+594 |
+595 ~     
+    |
+
+warning: this `impl` can be derived
+   --> botserver/src/core/session/mod.rs:668:5
+    |
+668 | /     impl Default for SessionState {
+669 | |         fn default() -> Self {
+670 | |             Self::Active
+671 | |         }
+672 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#derivable_impls
+help: replace the manual implementation with a derive attribute and mark the default variant
+    |
+661 ~     #[derive(Default)]
+662 ~     pub enum SessionState {
+663 ~         #[default]
+664 ~         Active,
+665 |         Waiting,
+...
+669 |
+670 ~     
+    |
+
+warning: this `impl` can be derived
+   --> botserver/src/core/session/mod.rs:723:5
+    |
+723 | /     impl Default for ContentType {
+724 | |         fn default() -> Self {
+725 | |             Self::Text
+726 | |         }
+727 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#derivable_impls
+help: replace the manual implementation with a derive attribute and mark the default variant
+    |
+712 ~     #[derive(Default)]
+713 ~     pub enum ContentType {
+714 ~         #[default]
+715 ~         Text,
+716 |         Image,
+...
+724 |
+725 ~     
+    |
+
+warning: this `impl` can be derived
+   --> botserver/src/core/session/mod.rs:763:5
+    |
+763 | /     impl Default for Priority {
+764 | |         fn default() -> Self {
+765 | |             Self::Normal
+766 | |         }
+767 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#derivable_impls
+help: replace the manual implementation with a derive attribute and mark the default variant
+    |
+756 ~     #[derive(Default)]
+757 ~     pub enum Priority {
+758 |         Low = 0,
+759 ~         #[default]
+760 ~         Normal = 1,
+761 |         High = 2,
+...
+764 |
+765 ~     
+    |
+
+warning: this `impl` can be derived
+   --> botserver/src/core/session/mod.rs:779:5
+    |
+779 | /     impl Default for QueueStatus {
+780 | |         fn default() -> Self {
+781 | |             Self::Waiting
+782 | |         }
+783 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#derivable_impls
+help: replace the manual implementation with a derive attribute and mark the default variant
+    |
+771 ~     #[derive(Default)]
+772 ~     pub enum QueueStatus {
+773 ~         #[default]
+774 ~         Waiting,
+775 |         Assigned,
+...
+780 |
+781 ~     
+    |
+
+warning: this `impl` can be derived
+   --> botserver/src/core/session/mod.rs:824:5
+    |
+824 | /     impl Default for ConversationState {
+825 | |         fn default() -> Self {
+826 | |             Self::Initial
+827 | |         }
+828 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#derivable_impls
+help: replace the manual implementation with a derive attribute and mark the default variant
+    |
+815 ~     #[derive(Default)]
+816 ~     pub enum ConversationState {
+817 ~         #[default]
+818 ~         Initial,
+819 |         WaitingForUser,
+...
+825 |
+826 ~     
+    |
+
+error: this comparison involving the minimum or maximum element for this type contains a case that is always true or always false
+   --> botserver/src/core/shared/memory_monitor.rs:500:36
+    |
+500 |     assert!(stats.rss_bytes > 0 || stats.virtual_bytes >= 0);
+    |                                    ^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: because `0` is the minimum value for this type, this comparison is always true
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#absurd_extreme_comparisons
+    = note: `#[deny(clippy::absurd_extreme_comparisons)]` on by default
+
+warning: field assignment outside of initializer for an instance created with Default::default()
+   --> botserver/src/security/csrf.rs:606:9
+    |
+606 |         config.token_expiry_minutes = 0;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: consider initializing the variable with `security::csrf::CsrfConfig { token_expiry_minutes: 0, ..Default::default() }` and removing relevant reassignments
+   --> botserver/src/security/csrf.rs:605:9
+    |
+605 |         let mut config = CsrfConfig::default();
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#field_reassign_with_default
+    = note: `#[warn(clippy::field_reassign_with_default)]` on by default
+
+warning: field assignment outside of initializer for an instance created with Default::default()
+    --> botserver/src/security/dlp.rs:1079:9
+     |
+1079 |         config.scan_inbound = false;
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+note: consider initializing the variable with `security::dlp::DlpConfig { scan_inbound: false, ..Default::default() }` and removing relevant reassignments
+    --> botserver/src/security/dlp.rs:1078:9
+     |
+1078 |         let mut config = DlpConfig::default();
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#field_reassign_with_default
+
+warning: field assignment outside of initializer for an instance created with Default::default()
+   --> botserver/src/security/encryption.rs:622:9
+    |
+622 |         config.envelope_encryption = true;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: consider initializing the variable with `security::encryption::EncryptionConfig { envelope_encryption: true, ..Default::default() }` and removing relevant reassignments
+   --> botserver/src/security/encryption.rs:621:9
+    |
+621 |         let mut config = EncryptionConfig::default();
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#field_reassign_with_default
+
+error: this comparison involving the minimum or maximum element for this type contains a case that is always true or always false
+   --> botserver/src/security/password.rs:720:17
+    |
+720 |         assert!(result.strength.score() >= 0);
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: because `0` is the minimum value for this type, this comparison is always true
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#absurd_extreme_comparisons
+
+warning: field assignment outside of initializer for an instance created with Default::default()
+    --> botserver/src/security/security_monitoring.rs:1011:9
+     |
+1011 |         config.brute_force_threshold = 3;
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+note: consider initializing the variable with `security::security_monitoring::SecurityMonitoringConfig { brute_force_threshold: 3, ..Default::default() }` and removing relevant reassignments
+    --> botserver/src/security/security_monitoring.rs:1010:9
+     |
+1010 |         let mut config = SecurityMonitoringConfig::default();
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#field_reassign_with_default
+
+warning: field assignment outside of initializer for an instance created with Default::default()
+    --> botserver/src/security/security_monitoring.rs:1033:9
+     |
+1033 |         config.brute_force_threshold = 2;
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+note: consider initializing the variable with `security::security_monitoring::SecurityMonitoringConfig { brute_force_threshold: 2, ..Default::default() }` and removing relevant reassignments
+    --> botserver/src/security/security_monitoring.rs:1032:9
+     |
+1032 |         let mut config = SecurityMonitoringConfig::default();
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#field_reassign_with_default
+
+warning: field assignment outside of initializer for an instance created with Default::default()
+    --> botserver/src/security/security_monitoring.rs:1183:9
+     |
+1183 |         config.retention_hours = 0;
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+note: consider initializing the variable with `security::security_monitoring::SecurityMonitoringConfig { retention_hours: 0, ..Default::default() }` and removing relevant reassignments
+    --> botserver/src/security/security_monitoring.rs:1182:9
+     |
+1182 |         let mut config = SecurityMonitoringConfig::default();
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#field_reassign_with_default
+
+warning: field assignment outside of initializer for an instance created with Default::default()
+   --> botserver/src/security/session.rs:715:9
+    |
+715 |         config.max_concurrent_sessions = 2;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: consider initializing the variable with `security::session::SessionConfig { max_concurrent_sessions: 2, ..Default::default() }` and removing relevant reassignments
+   --> botserver/src/security/session.rs:714:9
+    |
+714 |         let mut config = SessionConfig::default();
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#field_reassign_with_default
+
+warning: field assignment outside of initializer for an instance created with Default::default()
+   --> botserver/src/security/webhook.rs:701:9
+    |
+701 |         config.timestamp_tolerance_seconds = 60;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: consider initializing the variable with `security::webhook::WebhookConfig { timestamp_tolerance_seconds: 60, ..Default::default() }` and removing relevant reassignments
+   --> botserver/src/security/webhook.rs:700:9
+    |
+700 |         let mut config = WebhookConfig::default();
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#field_reassign_with_default
+
+warning: field assignment outside of initializer for an instance created with Default::default()
+   --> botserver/src/security/webhook.rs:732:9
+    |
+732 |         config.require_https = false;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: consider initializing the variable with `security::webhook::WebhookConfig { require_https: false, ..Default::default() }` and removing relevant reassignments
+   --> botserver/src/security/webhook.rs:731:9
+    |
+731 |         let mut config = WebhookConfig::default();
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#field_reassign_with_default
+
+warning: field assignment outside of initializer for an instance created with Default::default()
+   --> botserver/src/security/webhook.rs:742:9
+    |
+742 |         config.max_payload_size = 100;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: consider initializing the variable with `security::webhook::WebhookConfig { max_payload_size: 100, ..Default::default() }` and removing relevant reassignments
+   --> botserver/src/security/webhook.rs:741:9
+    |
+741 |         let mut config = WebhookConfig::default();
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#field_reassign_with_default
+
+warning: field assignment outside of initializer for an instance created with Default::default()
+   --> botserver/src/security/webhook.rs:871:9
+    |
+871 |         config.replay_window_seconds = 0;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: consider initializing the variable with `security::webhook::WebhookConfig { replay_window_seconds: 0, ..Default::default() }` and removing relevant reassignments
+   --> botserver/src/security/webhook.rs:870:9
+    |
+870 |         let mut config = WebhookConfig::default();
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#field_reassign_with_default
+
+warning: useless use of `vec!`
+   --> botserver/src/security/command_guard.rs:597:24
+    |
+597 |         let _allowed = vec![PathBuf::from("/tmp")];
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: you can use an array directly: `[PathBuf::from("/tmp")]`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#useless_vec
+    = note: `#[warn(clippy::useless_vec)]` on by default
+
+warning: comparison is useless due to type limits
+   --> botserver/src/core/shared/memory_monitor.rs:500:36
+    |
+500 |     assert!(stats.rss_bytes > 0 || stats.virtual_bytes >= 0);
+    |                                    ^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_comparisons)]` on by default
+
+warning: comparison is useless due to type limits
+   --> botserver/src/security/password.rs:720:17
+    |
+720 |         assert!(result.strength.score() >= 0);
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `botserver` (bin "botserver" test) generated 45 warnings (23 duplicates)
+error: could not compile `botserver` (bin "botserver" test) due to 2 previous errors; 45 warnings emitted
