@@ -24,6 +24,7 @@ jobs:
         run: |
           git config --global http.sslVerify false
           git config --global --add safe.directory "*"
+          git config --global url."https://alm.pragmatismo.com.br/".insteadOf "http://10.16.164.222:4747/"
 
       - name: Setup PATH for globally installed tools
         run: |
