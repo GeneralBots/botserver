@@ -91,7 +91,7 @@ jobs:
       - name: Verify botserver started
         run: |
           sleep 10
-          ssh -o StrictHostKeyChecking=no pragmatismo-system "pgrep -f botserver && echo 'OK: botserver is running' || (echo 'ERROR: botserver not running' && cat /opt/gbo/logs/error.log | tail -20 && exit 1)"
+          ssh -o StrictHostKeyChecking=no system "pgrep -f botserver && echo 'OK: botserver is running' || (echo 'ERROR: botserver not running' && cat /opt/gbo/logs/error.log | tail -20 && exit 1)"
 
       - name: Save deploy log
         if: always()
