@@ -11,6 +11,9 @@ env:
   CARGO_NET_RETRY: 10
   WORKSPACE: /opt/gbo/ci/botserver
   CARGO_TARGET_DIR: /opt/gbo/ci/botserver/target
+  SCCACHE_DIR: /opt/gbo/cache/sccache
+  RUSTC_WRAPPER: sccache
+  CARGO_HOME: /opt/gbo/cache/cargo
 
 jobs:
   build:
@@ -20,9 +23,21 @@ jobs:
       - name: Disable SSL verification
         run: git config --global http.sslVerify false
 
+      - name: Setup PATH for globally installed tools
+        run: |
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          echo "/usr/local/bin" >> $GITHUB_PATH
+
+      - name: Start sccache server
+        run: |
+          sccache --start-server || true
+          sccache --show-stats || true
+
       - name: Setup Workspace
         run: |
           mkdir -p $WORKSPACE
+          mkdir -p $SCCACHE_DIR
+          mkdir -p $CARGO_HOME/registry
           cd $WORKSPACE
           # Update or clone botlib
           if [ -d botlib/.git ]; then
@@ -48,22 +63,6 @@ jobs:
         run: |
           apt-get update -qq
           apt-get install -y libpq-dev libssl-dev liblzma-dev pkg-config
-
-      - name: Install Rust
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-
-      - name: Install sccache
-        run: |
-          if [ ! -f $HOME/.cargo/bin/sccache ]; then
-            wget -q https://github.com/mozilla/sccache/releases/download/v0.8.2/sccache-v0.8.2-x86_64-unknown-linux-musl.tar.gz
-            tar xzf sccache-v0.8.2-x86_64-unknown-linux-musl.tar.gz
-            mv sccache-v0.8.2-x86_64-unknown-linux-musl/sccache $HOME/.cargo/bin/sccache
-            chmod +x $HOME/.cargo/bin/sccache
-          fi
-          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
-          $HOME/.cargo/bin/sccache --start-server || true
 
       - name: Build BotServer
         working-directory: /opt/gbo/ci/botserver
