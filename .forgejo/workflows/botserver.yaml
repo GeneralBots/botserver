@@ -20,11 +20,15 @@ jobs:
     runs-on: gbo
 
     steps:
-      - name: Disable SSL verification
-        run: git config --global http.sslVerify false
+      - name: Disable SSL verification and setup git
+        run: |
+          git config --global http.sslVerify false
+          git config --global --add safe.directory "*"
 
       - name: Setup PATH for globally installed tools
         run: |
+          [ -f /root/.cargo/env ] && source /root/.cargo/env
+          export PATH="$HOME/.cargo/bin:/usr/local/bin:$PATH"
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           echo "/usr/local/bin" >> $GITHUB_PATH
 
