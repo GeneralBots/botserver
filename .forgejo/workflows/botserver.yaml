@@ -46,8 +46,8 @@ jobs:
 
       - name: Install system dependencies
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y libpq-dev libssl-dev liblzma-dev pkg-config
+          apt-get update -qq
+          apt-get install -y libpq-dev libssl-dev liblzma-dev pkg-config
 
       - name: Install Rust
         run: |
@@ -74,7 +74,7 @@ jobs:
 
       - name: Save build log
         if: always()
-        run: sudo cp /tmp/build.log /tmp/botserver-$(date +%Y%m%d-%H%M%S).log || true
+        run: cp /tmp/build.log /tmp/botserver-$(date +%Y%m%d-%H%M%S).log || true
 
       - name: Deploy via SSH
         run: |
@@ -85,7 +85,7 @@ jobs:
           SCP_EXIT=${PIPESTATUS[0]}
           echo "scp exit: $SCP_EXIT" >> /tmp/deploy.log
           if [ "$SCP_EXIT" = "0" ]; then
-            ssh -o StrictHostKeyChecking=no system "chmod +x /opt/gbo/bin/botserver && chown gbuser:gbuser /opt/gbo/bin/botserver && cd /opt/gbo/bin && nohup sudo -u gbuser ./botserver --noconsole >> /opt/gbo/logs/error.log 2>&1 &" 2>&1 | tee -a /tmp/deploy.log
+            ssh -o StrictHostKeyChecking=no system "chmod +x /opt/gbo/bin/botserver && chown gbuser:gbuser /opt/gbo/bin/botserver && cd /opt/gbo/bin && nohup su - gbuser -c './botserver --noconsole >> /opt/gbo/logs/error.log 2>&1 &'" 2>&1 | tee -a /tmp/deploy.log
           fi
 
       - name: Verify botserver started
@@ -95,4 +95,4 @@ jobs:
 
       - name: Save deploy log
         if: always()
-        run: sudo cp /tmp/deploy.log /tmp/deploy-$(date +%Y%m%d-%H%M%S).log || true
+        run: cp /tmp/deploy.log /tmp/deploy-$(date +%Y%m%d-%H%M%S).log || true
