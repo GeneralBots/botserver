@@ -24,38 +24,24 @@ jobs:
         run: |
           git config --global http.sslVerify false
           git config --global --add safe.directory "*"
-          git config --global url."https://alm.pragmatismo.com.br/".insteadOf "http://10.16.164.222:4747/"
+          # Remove bad git config that replaces https with internal IP
+          git config --global --unset-all url.http://10.16.164.222:4747/.insteadof || true
 
-      - name: Setup PATH for globally installed tools
+      - name: Fix git remote URLs
         run: |
-          [ -f /root/.cargo/env ] && source /root/.cargo/env
-          export PATH="$HOME/.cargo/bin:/usr/local/bin:$PATH"
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-          echo "/usr/local/bin" >> $GITHUB_PATH
-
-      - name: Start sccache server
-        run: |
-          sccache --start-server || true
-          sccache --show-stats || true
+          cd $WORKSPACE
+          # Remove existing repos to force fresh clone with correct URLs
+          rm -rf botlib botserver
+          mkdir -p $SCCACHE_DIR
+          mkdir -p $CARGO_HOME/registry
 
       - name: Setup Workspace
         run: |
-          mkdir -p $WORKSPACE
-          mkdir -p $SCCACHE_DIR
-          mkdir -p $CARGO_HOME/registry
           cd $WORKSPACE
-          # Update or clone botlib
-          if [ -d botlib/.git ]; then
-            git -C botlib fetch --depth 1 origin main && git -C botlib checkout FETCH_HEAD
-          else
-            git clone --depth 1 --branch main https://alm.pragmatismo.com.br/GeneralBots/botlib.git botlib
-          fi
-          # Update or clone botserver
-          if [ -d botserver/.git ]; then
-            git -C botserver fetch --depth 1 origin main && git -C botserver checkout FETCH_HEAD
-          else
-            git clone --depth 1 --branch main https://alm.pragmatismo.com.br/GeneralBots/BotServer.git botserver
-          fi
+          # Clone botlib
+          git clone --depth 1 --branch main https://alm.pragmatismo.com.br/GeneralBots/botlib.git botlib
+          # Clone botserver
+          git clone --depth 1 --branch main https://alm.pragmatismo.com.br/GeneralBots/BotServer.git botserver
           # Get workspace Cargo.toml from gb and strip unused members
           git clone --depth 1 --branch main https://alm.pragmatismo.com.br/GeneralBots/gb.git /tmp/gb-ws
           cp /tmp/gb-ws/Cargo.toml Cargo.toml
@@ -80,22 +66,27 @@ jobs:
         if: always()
         run: cp /tmp/build.log /tmp/botserver-$(date +%Y%m%d-%H%M%S).log || true
 
-      - name: Deploy via SSH
+      - name: Setup incus on host
+        run: |
+          # SSH to host and setup incus for pushing to containers
+          ssh -o StrictHostKeyChecking=no administrator@63.141.255.9 "sudo cp /opt/incus/bin/incus /usr/local/bin/ && sudo chmod +x /usr/local/bin/incus"
+
+      - name: Deploy via incus from host
         run: |
           set +e
-          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 system "pkill -f botserver; sleep 2; rm -f /opt/gbo/bin/botserver" 2>&1 | tee /tmp/deploy.log
-          echo "--- scp start ---" >> /tmp/deploy.log
-          scp -o StrictHostKeyChecking=no /opt/gbo/ci/botserver/target/debug/botserver system:/opt/gbo/bin/botserver 2>&1 | tee -a /tmp/deploy.log
-          SCP_EXIT=${PIPESTATUS[0]}
-          echo "scp exit: $SCP_EXIT" >> /tmp/deploy.log
-          if [ "$SCP_EXIT" = "0" ]; then
-            ssh -o StrictHostKeyChecking=no system "chmod +x /opt/gbo/bin/botserver && chown gbuser:gbuser /opt/gbo/bin/botserver && cd /opt/gbo/bin && nohup su - gbuser -c './botserver --noconsole >> /opt/gbo/logs/error.log 2>&1 &'" 2>&1 | tee -a /tmp/deploy.log
-          fi
+          # SSH to host and deploy via incus
+          ssh -o StrictHostKeyChecking=no administrator@63.141.255.9 "sudo incus exec system -- pkill -f botserver || true"
+          sleep 2
+          ssh -o StrictHostKeyChecking=no administrator@63.141.255.9 "sudo incus exec system -- rm -f /opt/gbo/bin/botserver"
+          ssh -o StrictHostKeyChecking=no administrator@63.141.255.9 "sudo incus file push /opt/gbo/ci/botserver/target/debug/botserver system/opt/gbo/bin/botserver"
+          ssh -o StrictHostKeyChecking=no administrator@63.141.255.9 "sudo incus exec system -- chmod +x /opt/gbo/bin/botserver"
+          ssh -o StrictHostKeyChecking=no administrator@63.141.255.9 "sudo incus exec system -- chown gbuser:gbuser /opt/gbo/bin/botserver"
+          ssh -o StrictHostKeyChecking=no administrator@63.141.255.9 "sudo incus exec system -- su - gbuser -c 'cd /opt/gbo/bin && nohup ./botserver --noconsole >> /opt/gbo/logs/error.log 2>&1 &'"
 
       - name: Verify botserver started
         run: |
           sleep 10
-          ssh -o StrictHostKeyChecking=no system "pgrep -f botserver && echo 'OK: botserver is running' || (echo 'ERROR: botserver not running' && cat /opt/gbo/logs/error.log | tail -20 && exit 1)"
+          ssh -o StrictHostKeyChecking=no administrator@63.141.255.9 "sudo incus exec system -- pgrep -f botserver" && echo 'OK: botserver is running' || (echo 'ERROR: botserver not running' && ssh -o StrictHostKeyChecking=no administrator@63.141.255.9 "sudo incus exec system -- tail -20 /opt/gbo/logs/error.log" && exit 1)
 
       - name: Save deploy log
         if: always()
