@@ -55,9 +55,22 @@ jobs:
           apt-get update -qq
           apt-get install -y libpq-dev libssl-dev liblzma-dev pkg-config
 
+      - name: Setup PATH for cargo and sccache
+        run: |
+          source /opt/gbo/cache/cargo/env
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          echo "/usr/local/bin" >> $GITHUB_PATH
+
+      - name: Start sccache
+        run: |
+          source /opt/gbo/cache/cargo/env
+          sccache --start-server || true
+          sccache --show-stats || true
+
       - name: Build BotServer
         working-directory: /opt/gbo/ci/botserver
         run: |
+          source /opt/gbo/cache/cargo/env
           cargo build -p botserver --features chat -j 8 2>&1 | tee /tmp/build.log
           ls -lh target/debug/botserver
           sccache --show-stats || true
